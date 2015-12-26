@@ -21,7 +21,8 @@ using namespace std;
 #define DEFUALT_CHILD_MAXTASK 1000
 
 /**
- * 半同步半异步TCP线程池模板
+ * linux平台基于epoll的轻量级高并发半同步半异步TCP线程池模板
+ * a lighted TCP thread pool based on linux epoll
  * 使用单例设计模式
  * 需要一个worker类的对象， 这个worker类必须实现void run(void);方法
  */
