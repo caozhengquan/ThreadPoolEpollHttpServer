@@ -11,85 +11,92 @@ using namespace std;
 #include <pthread.h>
 #include <inc.h>
 
-Event::Event(EPOLL_EVENTS e, int fd):pe(e), fd(fd)
-{
-	cout<<e<<" "<<fd<<endl;
-}
+
 
 Epoll::Epoll()
 {
-	CHECK(epollfd == epoll_create(MAXTASK));
+	CHECK(epollfd = epoll_create(MAXTASK));
 }
 /*************************************************************************/
 
 Worker::Worker(int ppfd)
 {
 	pipefd = ppfd;
+	epoll_event e;
+	e.data.fd = ppfd;
+	e.events = EPOLLIN;
+	addfd(e);
 }
 void Worker::run()
 
 {
 	printf("I am running\n");
+	poll();
+}
+
+void Worker::handle(epoll_event &e)
+{
+
 }
 /*************************************************************************/
 
-void Epoll::addfd(Event e)
+void Epoll::addfd(epoll_event &e)
 {
 	bool exist = false;
 	epoll_event event;
-	event.data.fd = e.fd;
-	event.events = e.pe;
+	event.data.fd = e.data.fd;
+	event.events = e.events;
 
-	if(rfds.find(e.fd) != rfds.end())
+	if(rfds.find(e.data.fd) != rfds.end())
 	{
 		event.events |= EPOLLIN;
 		exist = true;
 	}
-	if(wfds.find(e.fd) != wfds.end())
+	if(wfds.find(e.data.fd) != wfds.end())
 	{
 		event.events |= EPOLLOUT;
 		exist = true;
 	}
 	if(exist)
-		CHECK(epoll_ctl(epollfd, EPOLL_CTL_MOD, e.fd, &event));
+		CHECK(epoll_ctl(epollfd, EPOLL_CTL_MOD, e.data.fd, &event));
 	else
-		CHECK(epoll_ctl(epollfd, EPOLL_CTL_ADD, e.fd, &event));
-	if(e.pe == EPOLLIN)
+		CHECK(epoll_ctl(epollfd, EPOLL_CTL_ADD, e.data.fd, &event));
+	if(e.events & EPOLLIN)
 	{
-		rfds.insert(e.fd);
+		rfds.insert(e.data.fd);
 	}
-	else if(e.pe == EPOLLOUT)
+	else if(e.events & EPOLLOUT)
 	{
-		wfds.insert(e.fd);
+		wfds.insert(e.data.fd);
 	}
 }
 
-void Epoll::delfd(Event e)
+void Epoll::delfd(epoll_event &e)
 {
 	epoll_event event;
-	event.data.fd = e.fd;
+	event.data.fd = e.data.fd;
 	event.events = 0;
 
-	if(rfds.find(e.fd) != rfds.end())
+	if(rfds.find(e.data.fd) != rfds.end())
 	{
 		event.events |= EPOLLIN;
 	}
-	if(wfds.find(e.fd) != wfds.end())
+	if(wfds.find(e.data.fd) != wfds.end())
 	{
 		event.events |= EPOLLOUT;
 	}
-	event.events &= ~e.pe;
+	event.events &= ~e.events;
 	if(event.events != 0)
-		CHECK(epoll_ctl(epollfd, EPOLL_CTL_MOD, e.fd, &event));
+		CHECK(epoll_ctl(epollfd, EPOLL_CTL_MOD, e.data.fd, &event));
 	else
-		CHECK(epoll_ctl(epollfd, EPOLL_CTL_DEL, e.fd, &event));
-	if(e.pe == EPOLLIN)
+		CHECK(epoll_ctl(epollfd, EPOLL_CTL_DEL, e.data.fd, &event));
+	if(e.events & EPOLLIN)
 	{
-		rfds.erase(e.fd);
+		rfds.erase(e.data.fd);
 	}
-	else if(e.pe == EPOLLOUT)
+	else if(e.events & EPOLLOUT)
 	{
-		wfds.erase(e.fd);
+		wfds.erase(e.data.fd);
 	}
 }
 void Epoll::poll()
@@ -105,15 +112,7 @@ void Epoll::poll()
 		}
 		for(i = 0; i < nfds; i++)
 		{
-			if(events[i].events & EPOLLIN)
-			{
-				handle(Event(EPOLLIN, events[i].data.fd));
-			}
-
-			if(events[i].events & EPOLLOUT)
-			{
-				handle(Event(EPOLLIN, events[i].data.fd));
-			}
+			handle(events[i]);
 		}
 	}
 }

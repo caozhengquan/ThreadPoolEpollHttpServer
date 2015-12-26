@@ -13,6 +13,6 @@ int main()
 {
 	cout<<"Hello world!"<<endl;
 	ThreadPool<Worker> *th = ThreadPool<Worker>::thread_pool_create(12345);
-	pause();
+	th->poll();
 	return 0;
 }

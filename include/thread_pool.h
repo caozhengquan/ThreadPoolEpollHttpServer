@@ -14,6 +14,7 @@ using namespace std;
 #define MAXTHREAD 20
 #define MAXTASK 1000
 #include <sys/epoll.h>
+#include <debug.h>
 class Msg
 {
 public:
@@ -24,22 +25,15 @@ public:
 		void *ptr;
 	}data;
 };
-class Event
-{
-public:
-	Event(EPOLL_EVENTS e = EPOLLIN, int fd = 0);
-	EPOLL_EVENTS pe;
-	int fd;
 
-};
 class Epoll
 {
 public:
 	Epoll();
-	void addfd(Event e);
-	void delfd(Event e);
+	void addfd(epoll_event &e);
+	void delfd(epoll_event &e);
 	void poll();
-	virtual void handle(Event e) = 0;
+	virtual void handle(epoll_event &e) = 0;
 private:
 	set<int> rfds;
 	set<int> wfds;
@@ -55,9 +49,10 @@ private:
 
 public:
 	~ThreadPool();
-	virtual void handle(Event e);
+
 	static ThreadPool *thread_pool_create(unsigned short port, int nthread = 8, string ip = "0.0.0.0");
 private:
+	virtual void handle(epoll_event &e);
 	ThreadPool(int nthread, unsigned short port, string ip /*= "0.0.0.0"*/);
 	int pipefd[MAXTHREAD][2];
 	static ThreadPool *tp;
@@ -68,6 +63,11 @@ private:
 template<typename TWorker>
 ThreadPool<TWorker>::ThreadPool(int nthread, unsigned short port, string ip):ts(ip.c_str(), port), maxthread(nthread), cur_worker(0)
 {
+	epoll_event e;
+	e.data.fd = ts.listen_sock.fd;
+	e.events = EPOLLIN;
+	addfd(e);
+
 	for(int i = 0; i < maxthread; i++)
 	{
 		CHECK(pipe(pipefd[i]));
@@ -77,6 +77,8 @@ ThreadPool<TWorker>::ThreadPool(int nthread, unsigned short port, string ip):ts(
 		CHECK2(pthread_create(&tid, NULL, ThreadPool::run_child, w));
 		pthread_detach(tid);
 	}
+
+
 }
 
 template<typename TWorker>
@@ -109,21 +111,24 @@ void* ThreadPool<TWorker>::run_child(void *arg)
 	return NULL;
 }
 template<typename TWorker>
-void ThreadPool<TWorker>::handle(Event e)
+void ThreadPool<TWorker>::handle(epoll_event &e)
 {
-	if(e.fd == ts.listen_sock.fd)
+	if(e.data.fd == ts.listen_sock.fd)
 	{
 		Msg msg;
 		msg.type = Msg::NewConn;
+		CHECK(msg.data.fd = ts.accept().fd);
+		DEBUGMSG("accept a client:%d\n", msg.data.fd);
 		CHECK(send(pipefd[cur_worker][0], &msg, sizeof(msg), 0) == sizeof(Msg));
 	}
 }
-class Worker
+class Worker:public Epoll
 {
 public:
 	Worker(int ppfd);
 	void run();
 private:
+	virtual void handle(epoll_event &e);
 	int pipefd;
 };
 
