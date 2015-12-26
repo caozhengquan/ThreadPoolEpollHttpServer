@@ -1,3 +1,10 @@
+/*************************************************************************
+    > File Name: worker.cpp
+    > Author: wyg
+    > Mail: wyg_0802@126.com
+    > Created Time: 2015年12月23日 星期三 16时07分33秒
+ ************************************************************************/
+
 #include <iostream>
 #include <pthread.h>
 using namespace std;
@@ -101,7 +108,7 @@ void Worker::handle_conn(epoll_event &e)
 	else
 	if(e.events & EPOLLOUT)
 	{
-
+		DEBUGMSG("event EPOLLOUT!");
 	}
 	else
 	{

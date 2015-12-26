@@ -1,3 +1,9 @@
+/*************************************************************************
+    > File Name: tcp_server.cpp
+    > Author: wyg
+    > Mail: wyg_0802@126.com
+    > Created Time: 2015年12月23日 星期三 16时07分33秒
+ ************************************************************************/
 #include "tcp_server.h"
 TcpServer::TcpServer(const char *ip /*="0.0.0.0"*/, unsigned short port)
 {
