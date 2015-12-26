@@ -4,11 +4,24 @@ using namespace std;
 #include <debug.h>
 #include <inc.h>
 #include <encap_epoll.h>
-Epoll::Epoll()
+
+/**
+ * 创建epoll内核对象
+ */
+Epoll::Epoll(int ntask):maxtask(ntask)
 {
 	bestop = false;
-	CHECK(epollfd = epoll_create(MAXTASK));
+	if(ntask > MAXTASK)
+		ntask = MAXTASK;
+	CHECK3(ntask > 0);
+	events = new epoll_event[ntask];
+	CHECK(epollfd = epoll_create(ntask));
 }
+
+/**
+ * 销毁epoll内核对象。
+ * 关闭所有文件描述符号(即所有连接)
+ */
 Epoll::~Epoll()
 {
 	close(epollfd);
@@ -24,8 +37,14 @@ Epoll::~Epoll()
 		close(*ite);
 	}
 
+	delete []events;
 	DEBUGMSG("Epoll destroyed!");
 }
+
+/**
+ * 向内核中加入文件描述符。
+ * 支持同时注册多个事件。
+ */
 void Epoll::addfd(epoll_event &e)
 {
 	bool exist = false;
@@ -43,20 +62,25 @@ void Epoll::addfd(epoll_event &e)
 		event.events |= EPOLLOUT;
 		exist = true;
 	}
-	if(exist)
+	if(exist)							//内核中有该描述符，所以修改
 		CHECK(epoll_ctl(epollfd, EPOLL_CTL_MOD, e.data.fd, &event));
-	else
+	else								//内核中没有该描述符，所以增加
 		CHECK(epoll_ctl(epollfd, EPOLL_CTL_ADD, e.data.fd, &event));
-	if(e.events & EPOLLIN)
+
+	if(e.events & EPOLLIN)			//注册的是读事件
 	{
 		rfds.insert(e.data.fd);
 	}
-	else if(e.events & EPOLLOUT)
+	if(e.events & EPOLLOUT)		//注册的是写事件
 	{
 		wfds.insert(e.data.fd);
 	}
 }
 
+/**
+ * 删除一个文件描述符
+ * 可以同时删除同一个描述符上的多个事件
+ */
 void Epoll::delfd(epoll_event &e)
 {
 	epoll_event event;
@@ -72,33 +96,40 @@ void Epoll::delfd(epoll_event &e)
 		event.events |= EPOLLOUT;
 	}
 	event.events &= ~e.events;
-	if(event.events != 0)
+	if(event.events != 0)			//已经没有事件， 删除描述符
 		CHECK(epoll_ctl(epollfd, EPOLL_CTL_MOD, e.data.fd, &event));
-	else
+	else								//还有事件，  修改文件描述符
 		CHECK(epoll_ctl(epollfd, EPOLL_CTL_DEL, e.data.fd, &event));
-	if(e.events & EPOLLIN)
+
+	if(e.events & EPOLLIN)			//删除的是读事件
 	{
 		rfds.erase(e.data.fd);
 	}
-	if(e.events & EPOLLOUT)
+	if(e.events & EPOLLOUT)		//删除的是写事件
 	{
 		wfds.erase(e.data.fd);
 	}
 }
+
+/**
+ * 使用epoll_wait等待事件发生
+ */
 void Epoll::poll()
 {
 	int i, nfds;
 	while(!bestop)
 	{
+		if(rfds.size()==0 && wfds.size()==0)
+			break;
 		nfds = epoll_wait(epollfd, events, MAXTASK, -1);
 		if(nfds == -1)
 		{
-
 			if(errno == EAGAIN || errno == EINTR)
 				continue;
 			CHECK(nfds);
 			break;
 		}
+
 		for(i = 0; i < nfds; i++)
 		{
 			handle(events[i]);

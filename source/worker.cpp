@@ -6,7 +6,10 @@ using namespace std;
 #include <worker.h>
 #include <msg.h>
 
-Worker::Worker(int ppfd)
+/**
+ * 把与父进程通信的管道描述符加入epoll
+ */
+Worker::Worker(int ppfd, int maxevent):Epoll(maxevent)
 {
 	pipefd = ppfd;
 	epoll_event e;
@@ -23,13 +26,16 @@ void Worker::run()
 
 {
 	DEBUGMSG("I am running...");
-	poll();
-	delete this;
+	poll();										//开始事件循环
+	delete this;									//自我销毁
 }
 
+/**
+ * Epoll事件首先经过这里，过滤后, 再调用子类方法
+ */
 void Worker::handle(epoll_event &e)
 {
-	if(e.data.fd == pipefd)
+	if(e.data.fd == pipefd)				//主线程有消息
 	{
 
 		int ret;
@@ -41,29 +47,39 @@ void Worker::handle(epoll_event &e)
 			delfd(e);
 			return;
 		}
-		if(msg.type == Msg::NewConn)
+		if(msg.type == Msg::NewConn)		//新连接
 		{
 
 			epoll_event e;
 			e.data.fd = msg.data.fd;
 			e.events = 0;
 			DEBUGMSG("a new conntion! fd:%d", e.data.fd);
-			handle_new_conn(e);
+			handle_new_conn(e);				//调用子类处理方法
 		}
-		else if(msg.type == Msg::Stop)
+		else if(msg.type == Msg::Stop)	//停止命令， 停止子线程
 		{
 			bestop = true;
 		}
 	}
 	else
-		handle_conn(e);
+		handle_conn(e);						//其他事件，调用子类处理方法
 }
+
+/**
+ * 处理一个新连接
+ * 这是个虚函数，应该由子类重写。
+ */
 void Worker::handle_new_conn(epoll_event &e)
 {
 	DEBUGMSG("thread:%u handle  new conntion!", (unsigned)pthread_self());
 	e.events = EPOLLIN;
 	addfd(e);
 }
+
+/**
+ * 处理连接上的数据
+ * 这是个虚函数，应该由子类重写。
+ */
 void Worker::handle_conn(epoll_event &e)
 {
 	DEBUGMSG("thread:%u handle client!", (unsigned)pthread_self());

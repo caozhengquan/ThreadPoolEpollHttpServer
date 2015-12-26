@@ -8,21 +8,27 @@ using namespace std;
 
 #define MAXTASK 1000
 
+/**
+ * 这是一个虚基类
+ * 封装了epoll，可以添加删除描述符
+ * 可以分发事件。
+ */
 class Epoll
 {
 public:
-	Epoll();
+	Epoll(int ntask = 16);
 	virtual ~Epoll();
 	void addfd(epoll_event &e);
 	void delfd(epoll_event &e);
 	void poll();
-	virtual void handle(epoll_event &e) = 0;
+	virtual void handle(epoll_event &e) = 0;		//子类实现处理事件的方法
 protected:
 	bool bestop;
 private:
-	set<int> rfds;
-	set<int> wfds;
+	set<int> rfds;										//所有读事件文件描述符
+	set<int> wfds;										//所有写事件文件描述符
 	int epollfd;
-	epoll_event events[MAXTASK];
+	epoll_event *events;
+	int maxtask;
 };
 #endif /*__ENCAP_EPOLL_H__*/
