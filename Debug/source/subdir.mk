@@ -4,19 +4,25 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../source/encap_epoll.cpp \
 ../source/main.cpp \
 ../source/tcp_server.cpp \
-../source/thread_pool.cpp 
+../source/thread_pool.cpp \
+../source/worker.cpp 
 
 OBJS += \
+./source/encap_epoll.o \
 ./source/main.o \
 ./source/tcp_server.o \
-./source/thread_pool.o 
+./source/thread_pool.o \
+./source/worker.o 
 
 CPP_DEPS += \
+./source/encap_epoll.d \
 ./source/main.d \
 ./source/tcp_server.d \
-./source/thread_pool.d 
+./source/thread_pool.d \
+./source/worker.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

@@ -21,7 +21,7 @@ Socket TcpServer::accept()
 {
 	Socket s;
 	socklen_t len = sizeof(sockaddr);
-	CHECK(::accept(listen_sock.fd, (sockaddr*)&s.addr, &len));
+	CHECK(s.fd = ::accept(listen_sock.fd, (sockaddr*)&s.addr, &len));
 	return s;
 }
 
@@ -29,4 +29,5 @@ int test_main()
 {
 	TcpServer ts;
 	Socket s = ts.accept();
+	return 0;
 }

@@ -24,6 +24,7 @@
 #define max(x,y) ((x)>(y)?(x):(y))
 #define CHECK(x) do{ if((x)==-1) { fprintf(stderr, "%s(%s-%d):%s\n", __FILE__, __FUNCTION__, __LINE__, strerror(errno)); exit(-1);} }while(0)
 #define CHECK2(x) do{ if((x)!=0) { fprintf(stderr, "%s(%s-%d):failed!\n", __FILE__, __FUNCTION__, __LINE__); exit(-1);} }while(0)
+#define CHECK3(x) do{ if(!(x)) { fprintf(stderr, "%s(%s-%d):failed!\n", __FILE__, __FUNCTION__, __LINE__); exit(-1);} }while(0)
 #define CHECKMSG(x, msg) do{ if((x)!=0) { fprintf(stderr, "%s(%s-%d):%s\n", __FILE__, __FUNCTION__, __LINE__, msg); exit(-1);} }while(0)
 #define ASSERT(x) do{ if(!(x)) { fprintf(stderr, "ASSERT Failed:%s(%s-%d):%s\n", __FILE__, __FUNCTION__, __LINE__, #x); exit(-1);} }while(0)
 #define err_quit(format, ...) do { fprintf(stderr, format, ##__VA_ARGS__); fprintf(stderr, "\n"); exit(-1); }while (0)
