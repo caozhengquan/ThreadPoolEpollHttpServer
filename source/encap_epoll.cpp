@@ -102,10 +102,16 @@ void Epoll::delfd(epoll_event &e)
 		event.events |= EPOLLOUT;
 	}
 	event.events &= ~e.events;
-	if(event.events != 0)			//已经没有事件， 删除描述符
+	if(event.events != 0)			//还有事件，  修改文件描述符
+	{
 		CHECK(epoll_ctl(epollfd, EPOLL_CTL_MOD, e.data.fd, &event));
-	else								//还有事件，  修改文件描述符
+
+	}
+	else								//已经没有事件， 删除并且关闭描述符
+	{
 		CHECK(epoll_ctl(epollfd, EPOLL_CTL_DEL, e.data.fd, &event));
+		::close(e.data.fd);
+	}
 
 	if(e.events & EPOLLIN)			//删除的是读事件
 	{

@@ -48,10 +48,11 @@ void Worker::handle(epoll_event &e)
 		int ret;
 		Msg msg;
 		ret = recv(e.data.fd, &msg, sizeof(msg), 0) == sizeof(Msg);
-		if(ret < 0)
+		if(ret <= 0)
 		{
 			e.events = EPOLLIN | EPOLLOUT;
 			delfd(e);
+			//close(e.data.fd);
 			return;
 		}
 		if(msg.type == Msg::NewConn)		//新连接
@@ -98,6 +99,7 @@ void Worker::handle_conn(epoll_event &e)
 		{
 			e.events = EPOLLIN | EPOLLOUT;
 			delfd(e);
+			//close(e.data.fd);
 			return;
 		}
 		data[ret] = 0;
@@ -114,6 +116,7 @@ void Worker::handle_conn(epoll_event &e)
 	{
 		e.events = EPOLLIN | EPOLLOUT;
 		delfd(e);
+		//close(e.data.fd);
 		return;
 	}
 }

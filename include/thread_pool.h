@@ -21,7 +21,7 @@ using namespace std;
 #define DEFUALT_CHILD_MAXTASK 1000
 
 /**
- * 线程池模板
+ * 半同步半异步TCP线程池模板
  * 使用单例设计模式
  * 需要一个worker类的对象， 这个worker类必须实现void run(void);方法
  */
@@ -55,7 +55,7 @@ private:
  */
 template<typename TWorker>
 ThreadPool<TWorker>::ThreadPool(int nthread, unsigned short port, string ip, int maxevent):
-	Epoll(maxevent), maxthread(nthread), ts(ip.c_str(), port), cur_worker(0)
+	Epoll(nthread+1), maxthread(nthread), ts(ip.c_str(), port), cur_worker(0)
 {
 	maxthread = maxthread > MAXTHREAD ? MAXTHREAD : maxthread;
 	CHECK3(maxthread > 0);
@@ -76,6 +76,9 @@ ThreadPool<TWorker>::ThreadPool(int nthread, unsigned short port, string ip, int
 		CHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, pipefd[i]));
 		pthread_t tid;
 		printf("create thread %d.\n", i);
+		e.data.fd = pipefd[i][0];
+		e.events = EPOLLIN;
+		addfd(e);
 		TWorker *w = new TWorker(pipefd[i][1]);
 		CHECK2(pthread_create(&tid, NULL, ThreadPool::run_child, w));
 		pthread_detach(tid);
