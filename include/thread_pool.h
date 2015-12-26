@@ -75,7 +75,7 @@ ThreadPool<TWorker>::ThreadPool(int nthread, unsigned short port, string ip, int
 		//创建父子线程通信的管道
 		CHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, pipefd[i]));
 		pthread_t tid;
-		printf("create thread %d.\n", i);
+		MSG_DEBUG("create thread %d.\n", i);
 		e.data.fd = pipefd[i][0];
 		e.events = EPOLLIN;
 		addfd(e);
@@ -83,6 +83,7 @@ ThreadPool<TWorker>::ThreadPool(int nthread, unsigned short port, string ip, int
 		CHECK2(pthread_create(&tid, NULL, ThreadPool::run_child, w));
 		pthread_detach(tid);
 	}
+	MSG_IFO("Server started! Listened on [%s]:%d\n", ip.c_str(), port);
 }
 
 template<typename TWorker>
@@ -121,7 +122,7 @@ void ThreadPool<TWorker>::handle_sig(int sig)
 {
 	if(sig == SIGINT)
 	{
-		cout<<"Thread pool exited!"<<endl;
+		MSG_IFO("Receive signal SIGINT");
 		ThreadPool<TWorker> *tp = ThreadPool<TWorker>::get_thread_pool();
 		tp->stop_all_thread();
 		sleep(3);
@@ -161,7 +162,7 @@ ThreadPool<TWorker>::~ThreadPool()
 	for(i = 0; i < maxthread; i++)
 		close(pipefd[i][0]);
 	tp = NULL;
-	DEBUGMSG("Thread Poll destroyed!");
+	MSG_IFO("Thread pool destroyed!");
 }
 
 /**
@@ -189,7 +190,7 @@ void ThreadPool<TWorker>::handle(epoll_event &e)
 		Msg msg;
 		msg.type = Msg::NewConn;
 		CHECK(msg.data.fd = ts.accept().fd);
-		DEBUGMSG("accept a client:%d", msg.data.fd);
+		MSG_DEBUG("accept a client:%d", msg.data.fd);
 		CHECK3(send(pipefd[cur_worker][0], &msg, sizeof(msg), 0) == sizeof(Msg));
 		cur_worker = (cur_worker + 1) % maxthread;
 	}

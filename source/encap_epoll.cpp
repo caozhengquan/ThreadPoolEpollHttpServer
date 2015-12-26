@@ -44,7 +44,7 @@ Epoll::~Epoll()
 	}
 
 	delete []events;
-	DEBUGMSG("Epoll destroyed!");
+	MSG_DEBUG("Epoll destroyed!");
 }
 
 /**
@@ -92,7 +92,7 @@ void Epoll::delfd(epoll_event &e)
 	epoll_event event;
 	event.data.fd = e.data.fd;
 	event.events = 0;
-	DEBUGMSG("Remove:%d", e.data.fd);
+
 	if(rfds.find(e.data.fd) != rfds.end())
 	{
 		event.events |= EPOLLIN;
@@ -111,6 +111,7 @@ void Epoll::delfd(epoll_event &e)
 	{
 		CHECK(epoll_ctl(epollfd, EPOLL_CTL_DEL, e.data.fd, &event));
 		::close(e.data.fd);
+		MSG_DEBUG("Remove:%d", e.data.fd);
 	}
 
 	if(e.events & EPOLLIN)			//删除的是读事件

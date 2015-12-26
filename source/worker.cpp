@@ -27,12 +27,12 @@ Worker::Worker(int ppfd, int maxevent):Epoll(maxevent)
 Worker::~Worker()
 {
 	close(pipefd);
-	DEBUGMSG("worker destroyed!");
+	MSG_DEBUG("worker destroyed!");
 }
 void Worker::run()
 
 {
-	DEBUGMSG("I am running...");
+	MSG_DEBUG("I am running...");
 	poll();										//开始事件循环
 	delete this;									//自我销毁
 }
@@ -61,7 +61,7 @@ void Worker::handle(epoll_event &e)
 			epoll_event e;
 			e.data.fd = msg.data.fd;
 			e.events = 0;
-			DEBUGMSG("a new conntion! fd:%d", e.data.fd);
+			MSG_DEBUG("a new conntion! fd:%d", e.data.fd);
 			handle_new_conn(e);				//调用子类处理方法
 		}
 		else if(msg.type == Msg::Stop)	//停止命令， 停止子线程
@@ -79,7 +79,7 @@ void Worker::handle(epoll_event &e)
  */
 void Worker::handle_new_conn(epoll_event &e)
 {
-	DEBUGMSG("thread:%u handle  new conntion!", (unsigned)pthread_self());
+	MSG_DEBUG("thread:%u handle  new conntion!", (unsigned)pthread_self());
 	e.events = EPOLLIN;
 	addfd(e);
 }
@@ -90,7 +90,7 @@ void Worker::handle_new_conn(epoll_event &e)
  */
 void Worker::handle_conn(epoll_event &e)
 {
-	DEBUGMSG("thread:%u handle client!", (unsigned)pthread_self());
+	MSG_DEBUG("thread:%u handle client!", (unsigned)pthread_self());
 	if(e.events & EPOLLIN)
 	{
 		char data[512];
@@ -110,7 +110,7 @@ void Worker::handle_conn(epoll_event &e)
 	else
 	if(e.events & EPOLLOUT)
 	{
-		DEBUGMSG("event EPOLLOUT!");
+		MSG_DEBUG("event EPOLLOUT!");
 	}
 	else
 	{
