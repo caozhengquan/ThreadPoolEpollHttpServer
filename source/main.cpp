@@ -12,7 +12,7 @@ using namespace std;
 int main()
 {
 	cout<<"Hello world!"<<endl;
-	ThreadPool *th = ThreadPool::thread_pool_create(12345);
+	ThreadPool<Worker> *th = ThreadPool<Worker>::thread_pool_create(12345);
 	pause();
 	return 0;
 }
