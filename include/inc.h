@@ -32,7 +32,7 @@
 #define CHECK(x) do{ if((x)==-1) { MSG_ERR("[%s] %s", #x, strerror(errno)); exit(-1);} }while(0)
 #define CHECK2(x) do{ if((x)!=0) { MSG_ERR("[%s] failed!",#x); exit(-1);} }while(0)
 #define CHECK3(x) do{ if(!(x))   { MSG_ERR("[%s] failed!",#x); exit(-1);} }while(0)
-#define CHECKMSG(x, msg) do{ if((x)!=0) { MSG_ERR("[%s] %s!",#x, msg); exit(-1);} }while(0)
+#define CHECKMSG(x, msg) do{ if(!(x)) { MSG_ERR("[%s] %s\n",#x, msg); exit(-1);} }while(0)
 #define ASSERT(x) do{ if(!(x)) {MSG_ERR("[%s] failed!",#x); exit(-1);} }while(0)
 #define err_quit(format, ...) do { MSG_ERR(format, ##__VA_ARGS__); exit(-1); }while (0)
 #define ERR_LEN 256
