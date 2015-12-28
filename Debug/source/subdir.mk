@@ -29,7 +29,7 @@ CPP_DEPS += \
 source/%.o: ../source/%.cpp
 	@echo '正在构建文件： $<'
 	@echo '正在调用： GNU C++ 编译器'
-	g++ -I"/root/eclipse/thread_pool/include" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
+	g++ -I"/root/eclipse/thread_pool/include" -I"/root/eclipse/thread_pool" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o"$@" "$<"
 	@echo '已结束构建： $<'
 	@echo ' '
 

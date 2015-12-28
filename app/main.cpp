@@ -9,19 +9,11 @@
 #include <thread_pool.h>
 #include <inc.h>
 #include <debug.h>
-
+#include <http/http_server.h>
 using namespace std;
 int main()
 {
-	Config cf("http.conf");
-	cf.set_default("ip", "0.0.0.0");
-	cf.set_default("port", "12345");
-	cf.set_default("maxthread", "4");
-	cf.set_default("maxevent", "1024");
-	cf.read_config();
-	ThreadPool<Worker> *th = ThreadPool<Worker>::thread_pool_create(
-			cf.get_int("port"), cf.get_int("maxthread"), cf.get_string("ip"), cf.get_int("maxevent"));
-	th->poll();
-
+	HttpServer *hs = HttpServer::get_http_server();
+	hs->start_server();
 	return 0;
 }
