@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #define DEBUG_ON
-#define LOG_LVL 0
+#define LOG_LVL 1
 //#define USE_SYS_LOG
 
 #define CONMSG(stdxx, format, ...)do {fprintf(stdxx, "%s(%d)-%s: ",__FILE__, __LINE__, __FUNCTION__); fprintf(stdxx, format, ##__VA_ARGS__); fprintf(stdxx,"\n");}while (0)
@@ -19,6 +19,7 @@
 		#define MSG_IFO(format, ...)		do{ if(LOG_LVL <= 1){ LOGMSG(LOG_INFO,  format, ##__VA_ARGS__); }} while(0)
 		#define MSG_DEBUG(format, ...)	do{ if(LOG_LVL <= 0){ LOGMSG(LOG_DEBUG, format, ##__VA_ARGS__); }} while(0)
 	#else
+
 		#define MSG_ERR(format, ...)		do{ if(LOG_LVL<=2){CONMSG(stderr, format, ##__VA_ARGS__);}}while(0)
 		#define MSG_IFO(format, ...)		do{ if(LOG_LVL<=1){CONMSG(stdout, format, ##__VA_ARGS__);}}while(0)
 		#define MSG_DEBUG(format, ...)	do{ if(LOG_LVL<=0){CONMSG(stdout, format, ##__VA_ARGS__);}}while(0)
@@ -29,5 +30,5 @@
 	#define MSG_IFO(format, ...)
 	#define MSG_DEBUG(format, ...)
 #endif
-
+#define ASSERT(x) do{ if(!(x)) {MSG_DEBUG("[%s] failed!",#x); exit(-1);} }while(0)
 #endif /*__DEBUG_H__*/

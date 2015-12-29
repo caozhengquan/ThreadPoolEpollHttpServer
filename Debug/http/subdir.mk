@@ -4,14 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../http/client_data.cpp \
 ../http/http_server.cpp \
 ../http/http_worker.cpp 
 
 OBJS += \
+./http/client_data.o \
 ./http/http_server.o \
 ./http/http_worker.o 
 
 CPP_DEPS += \
+./http/client_data.d \
 ./http/http_server.d \
 ./http/http_worker.d 
 

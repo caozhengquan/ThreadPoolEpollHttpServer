@@ -14,12 +14,15 @@
 #define __HTTP_SERVER_H__
 #define CONFIG_FILE "http.conf"
 #include <thread_pool.h>
+class HttpWorker;
 class HttpServer
 {
 public:
 
 	void start_server(void);
 	static HttpServer *get_http_server(void);
+	static map<int, string> errors;
+	Config &get_config(void);
 private:
 	HttpServer();
 private:
