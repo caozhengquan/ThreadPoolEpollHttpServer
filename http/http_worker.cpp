@@ -290,8 +290,8 @@ bool HttpWorker::parse_req(ClientData *cd)
 		case HANDLE_HEADER:
 		{
 			map<string, string>::iterator ite;
-			for(ite = cd->req_info.begin(); ite != cd->req_info.end(); ite++)
-				cout<<ite->first<<":"<<ite->second<<endl;
+			//for(ite = cd->req_info.begin(); ite != cd->req_info.end(); ite++)
+			//	cout<<ite->first<<":"<<ite->second<<endl;
 			handle_header(cd);
 			stop = true;
 			break;
