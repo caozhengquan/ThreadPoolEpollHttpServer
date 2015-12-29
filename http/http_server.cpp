@@ -17,7 +17,7 @@ HttpServer::HttpServer():cf(CONFIG_FILE)
 	cf.set_default("ip", "0.0.0.0");
 	cf.set_default("port", "12345");
 	cf.set_default("maxthread", "4");
-	cf.set_default("maxevent", "1024");
+	cf.set_default("maxevent", "10000");
 	cf.set_default("cwd", "/");
 	cf.read_config();
 

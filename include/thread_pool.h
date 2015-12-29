@@ -80,7 +80,7 @@ ThreadPool<TWorker>::ThreadPool(int nthread, unsigned short port, string ip, int
 		e.data.fd = pipefd[i][0];
 		e.events = EPOLLIN;
 		addfd(e);
-		TWorker *w = new TWorker(pipefd[i][1]);
+		TWorker *w = new TWorker(pipefd[i][1], maxevent);
 		CHECK2(pthread_create(&tid, NULL, ThreadPool::run_child, w));
 		pthread_detach(tid);
 	}

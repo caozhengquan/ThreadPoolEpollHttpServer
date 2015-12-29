@@ -12,7 +12,7 @@
 #include <sys/epoll.h>
 using namespace std;
 
-#define MAXTASK 1000
+#define MAXTASK 10000
 
 /**
  * 这是一个虚基类

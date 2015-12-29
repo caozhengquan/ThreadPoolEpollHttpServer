@@ -29,11 +29,13 @@ HttpWorker::HttpWorker(int ppfd, int maxevent):Worker(ppfd, maxevent)
 void HttpWorker::handle_new_conn(epoll_event &e)
 {
 	MSG_DEBUG("Http Worker thread:%u handle  new conntion!", (unsigned)pthread_self());
+
 	ASSERT(client.find(e.data.fd) == client.end());
 	ClientData *cd = new ClientData(e.data.fd);
 	client[e.data.fd] = cd;
 	e.events = EPOLLIN;
 	addfd(e);
+	MSG_IFO("%d clinum:%d", e.data.fd, client.size());
 }
 
 /**
@@ -53,6 +55,8 @@ void HttpWorker::handle_conn(epoll_event &e)
 		{
 			e.events = EPOLLIN | EPOLLOUT;
 			delfd(e);
+			delete client[e.data.fd];
+			client.erase(e.data.fd);
 			//close(e.data.fd);
 			return;
 		}
@@ -71,7 +75,9 @@ void HttpWorker::handle_conn(epoll_event &e)
 	{
 		e.events = EPOLLIN | EPOLLOUT;
 		delfd(e);
-		//close(e.data.fd);
+		delete client[e.data.fd];
+		client.erase(e.data.fd);
+		close(e.data.fd);
 		return;
 	}
 }
@@ -168,6 +174,7 @@ bool HttpWorker::send_response(ClientData *cd)
 			{
 				cd->file_size = 0;
 				close(cd->file_fd);
+				cd->file_fd = -1;
 			}
 			else
 			{
@@ -189,6 +196,7 @@ bool HttpWorker::send_response(ClientData *cd)
 				epoll_event e;
 				e.data.fd = cd->sock;
 				e.events = EPOLLIN | EPOLLOUT;
+				delfd(e);
 				delete client[e.data.fd];
 				client.erase(e.data.fd);
 				stop = true;

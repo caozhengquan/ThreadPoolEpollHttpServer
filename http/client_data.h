@@ -19,6 +19,7 @@ class ClientData
 public:
 
 	ClientData(int fd);
+	~ClientData();
 	int sock;
 
 	//请求

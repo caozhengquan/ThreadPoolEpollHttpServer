@@ -71,7 +71,10 @@ void Epoll::addfd(epoll_event &e)
 	if(exist)							//内核中有该描述符，所以修改
 		CHECK(epoll_ctl(epollfd, EPOLL_CTL_MOD, e.data.fd, &event));
 	else								//内核中没有该描述符，所以增加
+	{
+
 		CHECK(epoll_ctl(epollfd, EPOLL_CTL_ADD, e.data.fd, &event));
+	}
 
 	if(e.events & EPOLLIN)			//注册的是读事件
 	{
@@ -101,6 +104,7 @@ void Epoll::delfd(epoll_event &e)
 	{
 		event.events |= EPOLLOUT;
 	}
+	MSG_IFO("thread:%d rfds:%d wfds:%d", (int)pthread_self(), rfds.size(), wfds.size());
 	event.events &= ~e.events;
 	if(event.events != 0)			//还有事件，  修改文件描述符
 	{
